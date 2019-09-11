@@ -36,24 +36,24 @@ Kd = robot.fkine(q);
 % q()s gerados por cinemática inversa(Config Inicial)
 Ki = robot.ikunc(Kd);
 %Pose cube ROS
-sub = rossubscriber('/transformMsg');
+sub = rossubscriber('/denso_cube_tf');
 my_sub= receive(sub, 10);
 
 %Ponto acima do cubo
-x1 = my_sub.Translation.X;
-y1 = my_sub.Translation.Y;
-z1 = my_sub.Translation.Z; %- 0.025 + 0.25;
+x1 = my_sub.Transforms.Transform.Translation.X + 0.1;
+y1 = my_sub.Transforms.Transform.Translation.Y + 0.02;
+z1 =my_sub.Transforms.Transform.Translation.Z - 0.025 + 0.25 - 0.115;
 t1 = transl(x1, y1, z1+0.15);
 t1(1:3,1:3) = [-1 0 0;0 1 0;0 0 -1];
 %Ponto no meio do cubo
-x2 = my_sub.Translation.X;
-y2 = my_sub.Translation.Y;
-z2 = my_sub.Translation.Z - 0.025 + 0.19;
+x2 = my_sub.Transforms.Transform.Translation.X + 0.1;
+y2 = my_sub.Transforms.Transform.Translation.Y + 0.02;
+z2 = my_sub.Transforms.Transform.Translation.Z - 0.025 + 0.19 - 0.115;
 t2 = transl(x2, y2, z2+0.15);
 t2(1:3,1:3) = [-1 0 0;0 1 0;0 0 -1];
 %Ponto goal
-x3 = 0.326;
-y3 = -0.230;
+x3 = 0.2;
+y3 = 0.155;
 z3 = -0.088;
 t3 = transl(x3,y3,z3+0.15);
 t3(1:3,1:3) = [-1 0 0;0 1 0;0 0 -1];
@@ -61,17 +61,17 @@ t3(1:3,1:3) = [-1 0 0;0 1 0;0 0 -1];
 Ki1 = robot.ikunc(t1);
 Ki2 = robot.ikunc(t2);
 Ki3 = robot.ikunc(t3);
-robot.plot(q);
-pause(3)
-robot.plot(Ki1);
-pause(3)
-robot.plot(Ki2);
-pause(3)
-robot.plot(q);
-pause(3)
-robot.plot(Ki3);
-pause(3)
-robot.plot(q);
+% robot.plot(q);
+% pause(3)
+% robot.plot(Ki1);
+% pause(3)
+% robot.plot(Ki2);
+% pause(3)
+% robot.plot(q);
+% pause(3)
+% robot.plot(Ki3);
+% pause(3)
+% robot.plot(q);
 
 %robot.teach()
 
@@ -111,8 +111,8 @@ for i = 1:1:t*5
     set_param('projetoRobotica/theta4','Value',stheta4);
     set_param('projetoRobotica/theta5','Value',stheta5);
     set_param('projetoRobotica/theta6','Value',stheta6);
-    if i == t
-        set_param('projetoRobotica/gripper','Value','0.42');
+    if i == t*2
+        set_param('projetoRobotica/gripper','Value','0.43');
         pause(3)
     end
     
