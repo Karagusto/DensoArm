@@ -13,8 +13,8 @@ startup_rvc;
 
 %% Conexao com ROS
 
-setenv('ROS_MASTER_URI','http://10.0.0.101:11311')
-setenv('ROS_IP','10.0.0.101')
+setenv('ROS_MASTER_URI','http://10.0.0.103:11311')
+setenv('ROS_IP','10.0.0.103')
 
 rosinit;
 
@@ -35,29 +35,43 @@ q = [0 0 -pi/2 0 0 0];
 Kd = robot.fkine(q);
 % q()s gerados por cinemática inversa(Config Inicial)
 Ki = robot.ikunc(Kd);
+%Pose cube ROS
+sub = rossubscriber('/transformMsg');
+my_sub= receive(sub, 10);
 
-%Ponto teste 1
-x2 = 0.35;
-y2 = 0.23;
-z2 = -0.02;
+%Ponto acima do cubo
+x1 = my_sub.Translation.X;
+y1 = my_sub.Translation.Y;
+z1 = my_sub.Translation.Z; %- 0.025 + 0.25;
+t1 = transl(x1, y1, z1+0.15);
+t1(1:3,1:3) = [-1 0 0;0 1 0;0 0 -1];
+%Ponto no meio do cubo
+x2 = my_sub.Translation.X;
+y2 = my_sub.Translation.Y;
+z2 = my_sub.Translation.Z - 0.025 + 0.19;
 t2 = transl(x2, y2, z2+0.15);
 t2(1:3,1:3) = [-1 0 0;0 1 0;0 0 -1];
-%Ponto teste 2
+%Ponto goal
 x3 = 0.326;
 y3 = -0.230;
 z3 = -0.088;
 t3 = transl(x3,y3,z3+0.15);
 t3(1:3,1:3) = [-1 0 0;0 1 0;0 0 -1];
 %Cinematica inversa
+Ki1 = robot.ikunc(t1);
 Ki2 = robot.ikunc(t2);
 Ki3 = robot.ikunc(t3);
-%robot.plot(q);
-% pause(3)
-% robot.plot(Ki2);
-% pause(3)
-% robot.plot(Ki);
-% pause(3)
-% robot.plot(Ki3);
+robot.plot(q);
+pause(3)
+robot.plot(Ki1);
+pause(3)
+robot.plot(Ki2);
+pause(3)
+robot.plot(q);
+pause(3)
+robot.plot(Ki3);
+pause(3)
+robot.plot(q);
 
 %robot.teach()
 
@@ -67,62 +81,71 @@ Ki3 = robot.ikunc(t3);
 % Essas trajetórias serão enviadas para o denso como angulos por cinemática
 % inversa
 t = 50;
-traj = jtraj(q, Ki2, t);
-traj2 = jtraj(Ki2, q, t);
+traj = jtraj(q, Ki1, t);
+traj2 = jtraj(Ki1, Ki2, t);
 
 % Aqui vai entrar a coordenada que o usr inserir
-traj3 = jtraj(q, Ki3, t);
-traj4 = jtraj(Ki3, q, t);
+traj3 = jtraj(Ki2, q, t);
+traj4 = jtraj(q, Ki3, t);
+traj5 = jtraj(Ki3, q, t);
 
-trajF = [traj;traj2;traj3;traj4]
+trajF = [traj;traj2;traj3;traj4;traj5]
 %Kd
 %Kd2 
 %traj
 %Trajetória inicial=>cub
 
     
-% for i = 1:1:t*4
-%     
-%     stheta1 = num2str(trajF(i,1));
-%     stheta2 = num2str(trajF(i,2));
-%     stheta3 = num2str(trajF(i,3));
-%     stheta4 = num2str(trajF(i,4));
-%     stheta5 = num2str(trajF(i,5));
-%     stheta6 = num2str(trajF(i,6));
-%     pause(0.1)
-%     set_param('projetoRobotica/theta1','Value',stheta1);
-%     set_param('projetoRobotica/theta2','Value',stheta2);
-%     set_param('projetoRobotica/theta3','Value',stheta3);
-%     set_param('projetoRobotica/theta4','Value',stheta4);
-%     set_param('projetoRobotica/theta5','Value',stheta5);
-%     set_param('projetoRobotica/theta6','Value',stheta6);
-% %     set_param('projetoRobotica/gripper','Value',gripper);
-%     
-% end
+for i = 1:1:t*5
+    
+    stheta1 = num2str(trajF(i,1));
+    stheta2 = num2str(trajF(i,2));
+    stheta3 = num2str(trajF(i,3));
+    stheta4 = num2str(trajF(i,4));
+    stheta5 = num2str(trajF(i,5));
+    stheta6 = num2str(trajF(i,6));
+    pause(0.1)
+    set_param('projetoRobotica/theta1','Value',stheta1);
+    set_param('projetoRobotica/theta2','Value',stheta2);
+    set_param('projetoRobotica/theta3','Value',stheta3);
+    set_param('projetoRobotica/theta4','Value',stheta4);
+    set_param('projetoRobotica/theta5','Value',stheta5);
+    set_param('projetoRobotica/theta6','Value',stheta6);
+    if i == t
+        set_param('projetoRobotica/gripper','Value','0.42');
+        pause(3)
+    end
+    
+    if i == t*4
+        set_param('projetoRobotica/gripper','Value','0');
+        pause(3)
+    end
+    
+end
 
-for i = 1:1:t
-    [traj(i,1) traj(i,2) traj(i,3) traj(i,4) traj(i,5) traj(i,6)]
-    robot.plot([traj(i,1) traj(i,2) traj(i,3) traj(i,4) traj(i,5) traj(i,6)])
-    pause(0.01);
-end
-%Trajetória cubo=>inicial
-for i = 1:1:t
-    [traj2(i,1) traj2(i,2) traj2(i,3) traj2(i,4) traj2(i,5) traj2(i,6)]
-    robot.plot([traj2(i,1) traj2(i,2) traj2(i,3) traj2(i,4) traj2(i,5) traj2(i,6)])
-    pause(0.01);
-end
-%Trajetória inicial=>destino
-for i = 1:1:t
-    [traj3(i,1) traj3(i,2) traj3(i,3) traj3(i,4) traj3(i,5) traj3(i,6)]
-    robot.plot([traj3(i,1) traj3(i,2) traj3(i,3) traj3(i,4) traj3(i,5) traj3(i,6)])
-    pause(0.01);
-end
-%Trajetória destino=>inicial
-for i = 1:1:t
-    [traj4(i,1) traj4(i,2) traj4(i,3) traj4(i,4) traj4(i,5) traj4(i,6)]
-    robot.plot([traj4(i,1) traj4(i,2) traj4(i,3) traj4(i,4) traj4(i,5) traj4(i,6)])
-    pause(0.01);
-end
+% for i = 1:1:t
+%     [traj(i,1) traj(i,2) traj(i,3) traj(i,4) traj(i,5) traj(i,6)]
+%     robot.plot([traj(i,1) traj(i,2) traj(i,3) traj(i,4) traj(i,5) traj(i,6)])
+%     pause(0.01);
+% end
+% %Trajetória cubo=>inicial
+% for i = 1:1:t
+%     [traj2(i,1) traj2(i,2) traj2(i,3) traj2(i,4) traj2(i,5) traj2(i,6)]
+%     robot.plot([traj2(i,1) traj2(i,2) traj2(i,3) traj2(i,4) traj2(i,5) traj2(i,6)])
+%     pause(0.01);
+% end
+% %Trajetória inicial=>destino
+% for i = 1:1:t
+%     [traj3(i,1) traj3(i,2) traj3(i,3) traj3(i,4) traj3(i,5) traj3(i,6)]
+%     robot.plot([traj3(i,1) traj3(i,2) traj3(i,3) traj3(i,4) traj3(i,5) traj3(i,6)])
+%     pause(0.01);
+% end
+% %Trajetória destino=>inicial
+% for i = 1:1:t
+%     [traj4(i,1) traj4(i,2) traj4(i,3) traj4(i,4) traj4(i,5) traj4(i,6)]
+%     robot.plot([traj4(i,1) traj4(i,2) traj4(i,3) traj4(i,4) traj4(i,5) traj4(i,6)])
+%     pause(0.01);
+% end
 
 %%
 setpoint = [0.1, 0.5, 0];
