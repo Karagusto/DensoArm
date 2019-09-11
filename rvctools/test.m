@@ -58,9 +58,10 @@ traj2 = jtraj(Ki2, Ki, t);
 
 % Aqui vai entrar a coordenada que o usr inserir
 traj3 = jtraj(Ki, Ki3, t);
+traj4 = jtraj(Ki3, Ki, t);
 %Kd
 %Kd2
-%traj
+%trajros
 %Trajetória inicial=>cubo
 for i = 1:1:7
     [traj(i,1) traj(i,2) traj(i,3) traj(i,4) traj(i,5) traj(i,6)]
