@@ -3,6 +3,7 @@
 Os arquivos do projeto estão dentro da pasta rvctools.
 Os arquivos ArmTraj são livescripts para rodar no Matlab2017 ou mais nova, eles demontram todo o projeto em scripts.
 Dentro de rvctools o arquivo para o projeto é o test.m
+O arquivo do simulink é projetoRobotica
 
 Importante:
       Configurar o ROS como está descrito no doc.
